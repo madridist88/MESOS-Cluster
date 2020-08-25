@@ -1,0 +1,91 @@
+{
+  "id": "/kibana",
+  "backoffFactor": 1.15,
+  "backoffSeconds": 1,
+  "cmd": "echo -e \"elasticsearch.url: $ELASTICSEARCH_URL\nelasticsearch.username: $KIBANA_USER\nelasticsearch.password: $KIBANA_PASSWORD\nserver.host: 0.0.0.0\nserver.port: $PORT_KIBANA\nserver.basePath: /service/$FRAMEWORK_NAME\" > $MESOS_SANDBOX/kibana-$ELASTIC_VERSION-linux-x86_64/config/kibana.yml && if [ \"$XPACK_ENABLED\" = true ]; then echo -e \"\nxpack.security.encryptionKey: $MESOS_FRAMEWORK_ID\nxpack.reporting.encryptionKey: $MESOS_FRAMEWORK_ID\n\" >> $MESOS_SANDBOX/kibana-$ELASTIC_VERSION-linux-x86_64/config/kibana.yml && echo 'Installing X-Pack plugin...' && $MESOS_SANDBOX/kibana-$ELASTIC_VERSION-linux-x86_64/bin/kibana-plugin install file://$MESOS_SANDBOX/x-pack-$ELASTIC_VERSION.zip; fi && if [ \"$KIBANA_ELASTICSEARCH_TLS\" = true ]; then echo -e \"\nelasticsearch.ssl.certificateAuthorities: $MESOS_SANDBOX/.ssl/ca-bundle.crt\n\" >> $MESOS_SANDBOX/kibana-$ELASTIC_VERSION-linux-x86_64/config/kibana.yml; fi && env && $MESOS_SANDBOX/kibana-$ELASTIC_VERSION-linux-x86_64/bin/kibana",
+  "cpus": 0.5,
+  "disk": 0,
+  "env": {
+    "ELASTICSEARCH_URL": "http://coordinator.elastic.l4lb.thisdcos.directory:9200",
+    "FRAMEWORK_USER": "nobody",
+    "KIBANA_PASSWORD": "changeme",
+    "KIBANA_USER": "kibana",
+    "XPACK_ENABLED": "false",
+    "FRAMEWORK_NAME": "kibana",
+    "ELASTIC_VERSION": "5.6.5"
+  },
+  "executor": "",
+  "fetch": [
+    {
+      "uri": "https://artifacts.elastic.co/downloads/kibana/kibana-5.6.5-linux-x86_64.tar.gz",
+      "extract": true,
+      "executable": false,
+      "cache": true
+    },
+    {
+      "uri": "https://artifacts.elastic.co/downloads/packs/x-pack/x-pack-5.6.5.zip",
+      "extract": false,
+      "executable": false,
+      "cache": true
+    }
+  ],
+  "healthChecks": [
+    {
+      "gracePeriodSeconds": 900,
+      "intervalSeconds": 30,
+      "maxConsecutiveFailures": 0,
+      "path": "/",
+      "portIndex": 0,
+      "protocol": "MESOS_HTTP",
+      "ipProtocol": "IPv4",
+      "timeoutSeconds": 30,
+      "delaySeconds": 15
+    }
+  ],
+  "instances": 1,
+  "labels": {
+    "DCOS_PACKAGE_OPTIONS": "eyJzZXJ2aWNlIjp7Im5hbWUiOiJraWJhbmEiLCJ1c2VyIjoibm9ib2R5In0sImtpYmFuYSI6eyJ4cGFja19lbmFibGVkIjpmYWxzZSwiZWxhc3RpY3NlYXJjaF91cmwiOiJodHRwOi8vY29vcmRpbmF0b3IuZWxhc3RpYy5sNGxiLnRoaXNkY29zLmRpcmVjdG9yeTo5MjAwIiwiZWxhc3RpY3NlYXJjaF90bHMiOmZhbHNlLCJ1c2VyIjoia2liYW5hIiwicGFzc3dvcmQiOiJjaGFuZ2VtZSIsImNwdXMiOjAuNSwibWVtIjoyMDQ4fX0=",
+    "DCOS_SERVICE_SCHEME": "http",
+    "DCOS_PACKAGE_SOURCE": "https://universe.mesosphere.com/repo",
+    "DCOS_PACKAGE_METADATA": "eyJwYWNrYWdpbmdWZXJzaW9uIjoiNC4wIiwibmFtZSI6ImtpYmFuYSIsInZlcnNpb24iOiIyLjMuMS01LjYuNSIsIm1haW50YWluZXIiOiJzdXBwb3J0QG1lc29zcGhlcmUuaW8iLCJkZXNjcmlwdGlvbiI6IktpYmFuYSA1LCBhbmQgb3B0aW9uYWxseSBYLVBhY2siLCJ0YWdzIjpbImVsYXN0aWMiLCJlbGFzdGljc2VhcmNoIiwia2liYW5hIiwieC1wYWNrIl0sInNlbGVjdGVkIjp0cnVlLCJmcmFtZXdvcmsiOnRydWUsInByZUluc3RhbGxOb3RlcyI6IkRlZmF1bHQgY29uZmlndXJhdGlvbiByZXF1aXJlcyAxIGFnZW50IG5vZGUgd2l0aDogMC41IENQVSB8IDIwNDggTUIgTUVNIiwicG9zdEluc3RhbGxOb3RlcyI6IlRoZSBEQy9PUyBLaWJhbmEgc2VydmljZSBpcyBiZWluZyBpbnN0YWxsZWQhXG5cblx0RG9jdW1lbnRhdGlvbjogaHR0cHM6Ly9kb2NzLm1lc29zcGhlcmUuY29tL3NlcnZpY2VzL2VsYXN0aWMvXG5cdElzc3VlczogaHR0cHM6Ly9kb2NzLm1lc29zcGhlcmUuY29tL3N1cHBvcnQvIiwicG9zdFVuaW5zdGFsbE5vdGVzIjoiVGhlIERDL09TIEtpYmFuYSBzZXJ2aWNlIGlzIGJlaW5nIHVuaW5zdGFsbGVkLlxuXG5Gb3IgREMvT1MgdmVyc2lvbnMgZnJvbSAxLjEwIG5vIGZ1cnRoZXIgYWN0aW9uIGlzIHJlcXVpcmVkLiBGb3Igb2xkZXIgREMvT1MgdmVyc2lvbnMgZm9sbG93IHRoZSBpbnN0cnVjdGlvbnMgYXQgaHR0cHM6Ly9kb2NzLm1lc29zcGhlcmUuY29tL3NlcnZpY2VzL2VsYXN0aWMvdW5pbnN0YWxsIHRvIHJlbW92ZSBhbnkgcGVyc2lzdGVudCBzdGF0ZSBpZiByZXF1aXJlZC4iLCJpbWFnZXMiOnsiaWNvbi1zbWFsbCI6Imh0dHBzOi8vc3RhdGljLXd3dy5lbGFzdGljLmNvL2Fzc2V0cy9ibHQyODJhZTI0MjBlMzJmYzM4L2ljb24ta2liYW5hLWJiLnN2ZyIsImljb24tbWVkaXVtIjoiaHR0cHM6Ly9zdGF0aWMtd3d3LmVsYXN0aWMuY28vYXNzZXRzL2JsdDI4MmFlMjQyMGUzMmZjMzgvaWNvbi1raWJhbmEtYmIuc3ZnIiwiaWNvbi1sYXJnZSI6Imh0dHBzOi8vc3RhdGljLXd3dy5lbGFzdGljLmNvL2Fzc2V0cy9ibHQyODJhZTI0MjBlMzJmYzM4L2ljb24ta2liYW5hLWJiLnN2ZyJ9fQ==",
+    "DCOS_SERVICE_NAME": "kibana",
+    "DCOS_SERVICE_PORT_INDEX": "0",
+    "DCOS_PACKAGE_DEFINITION": "eyJtZXRhZGF0YSI6eyJDb250ZW50LVR5cGUiOiJhcHBsaWNhdGlvbi92bmQuZGNvcy51bml2ZXJzZS5wYWNrYWdlK2pzb247Y2hhcnNldD11dGYtODt2ZXJzaW9uPXY0IiwiQ29udGVudC1FbmNvZGluZyI6Imd6aXAifSwiZGF0YSI6Ikg0c0lBQUFBQUFBQUFMVlplVytqU0JiL0txei9tdFVtRHZqb0RwRkcydGd4amhtSHhKakw3TFpHSEdYQUxvNmhDaC9wN2UrK3J3cDg1T2hNdHpTalZndGN2UFAzRGg0dlgxdUZGNnk5S01raUM1VWt5YlBXVGF2WEZsc1hyY3hMRWZ4WUo3NlhlZkI3YzN6ZWFYZmIwbVcvL2FuZGgvTVNZZVFSZEdUdml1SkZLL1dTak1KL1ZBSTlxWW9pTCttL1UwUnlVc1NvUk8wa0I4NFFrYUJNQ2xwTC9ZMHJFdm9YZ3BlRlFzNlBQWXozZ25QNUJEWUNQZlVpMHJyNVR3dGhqOUFrZ0pQbWppQ3ZER0w0ZlRSMmQ4bjhhbjI1YUJFd0w2QW9iTjNRc2tMd08waGJOMW1GOFVWcmkzeVNVSFQ0dVN6QjQyMWVyZytrUllrbUdhRmdoSlpUQktwYmQyanBWWmdLUVo0dGs2Z3FQV2FrVUtJL3FxUkVSSkFFTDBJWkZiSThSTUkyb2ZHTklMYjd3dkRKRlA0bmRNVGV0ZkF3RUI1R0QyQmdrUlA2U3JnUkkrRnVlUFU0Rnhvb0NDbzNTWUNFaEFnK2dnZ0pTYzJBd24vOE40Ti85QzRQcWhRVWNqTnVoSmpTZ3R4Y1hZVjVRTnBuWUFkNWV0WElJbGNOWkZlTWYwSkloY2lmTU5iQnUycHNOclBrWjYydXNxUGRiV2Eza3BjTlI1TlNSRmlXZVNwSWJVa0U2SVJsVlZKUUwzZ0JSeGZrTkFDSGJZSHg1amhFYnlYa0dPZGJBUmc1U21YRm1ZbmcwWitENVdpc1FIUFFtK1liQlBtNEZ3cW1pRkFXWFhoTVFjdnlaQlpnZzBGS1JoZ2lkVEtsU1hZWDVFUi9WUnd0cVMyM1dIbEE2c1RzNEd0cjA3a3Rpb2NLcEFZeE1sQmFZSS9sWkF0U01ab00xY0lkVGo3QjlUUHFhampJM0dMUk1Tcy9WYWpyU1BJazJmNDJHZDRtaSs1QUN2WkFkMDgvZXgyY0xPeCtQRTIxYmVobzhuSmUwL2kyUlNlclBFSmRXbnEyR3Z2cHFHSm5TMGNrdytRMm1xUzRDcm82bklNZUp1dHVWSjluMXJQclRKTEg1RFlCWHJoWE81NnQ0U2svVjBIK3BPSFhhR01yWG5UaXpXUW80WW15VFZ4N0Y0UGNZZ0gyTHh4MTVRMzdVcEJ1Z1U1WGpKRmlXQ044WjRyV3dGeHJFMGV5NW9heXE5N2w2Vmg3N3JlUlIrcUlxck8xOGppelpBdDQ1ODY0ai8yeDhoeU84UXJvNGlEVjhtazJBQmxhMSsrcWE3QjlQUmZ4Y0diMkI0NDBHSmlTNWhpU09nSSs3Zy80VjNsaitUbTh5Nk9IWVc4N1hkMVdEMkFIMHhtbTFoNWtiWUpzeG15ZUFaL3BpQWY5WnpTcEdzUDliT0hvT2VqYjFPZDQ1YzZ2MXpwV0I0WnBNWjFUUit5eisyQ1MzUDRMNUdtNnBUMlprbXlBYmFQWldsNU1PN1JZcEVxMW1JdHIzZHlCcmJvNmsyUmJ0MVJqYnNxUFUzdFgrSm5WbXpwUlQ4UFhIVzBvci94T1AvWHNZSE9NZllhcFA3eE4xV1JRdU1uQVozRlFsWGcyTXpYUWJ6M09UUFZCTjNWbWd6eTUxL2VoYlVhT1FhSndIR00vR2J5SUgyRFVDOGJLeXRzRFZyWUdzY01pbWdQZXFiWkh6a0QwYkxtYWQ2dyt3eGo4TWd4Slc3NzBGNC9PWk94ZGgyR3BGMzRhUUp6N3F5RERXNGpieGw5VGpIaHNKY1VVWmNNUjNmbk1sQlJMbE9kelNWWjFpSWN6bkVSUHE5NkpSdElHeGxvZkdsSjA4bjEreWl0SGNoVVRhNm9oOXFnL3hsWG9SQlRkUlIzbmVTRk9POXJHVDkzQzNjdkhla0MyUkNiRFJUb1pXeXR2ZkIycFlsTVQ0eDJ6TjdLSDBteGhhK1hrZmtCQ095ejhwRmROa3lCU2s4VmZaSk1LTW8vMjBHQzhrOXdPcmliamd4M2J5RTB4Z1JyWVRQZnY1RTQzb2pYTzM4bWRyQ2lDT3dJeTF0eG16MTVFOW40QWVhQlA1eWJFYkswc1QzeWFNclBVdTdraW00YWkvV2l1dkZPSDJyTS83SytnemlCWFdQOVNSTmRVSk9EZnNGenliT3Y1UEhkTVVYblVSK3FUUGJ3R256VUNjWXFudGlyNXFVN2NPY3NYUGZEeE5wbmM5ZjdlK2puRENmSzB3L1BpcjlHWGVIYnZxT3ZRd3dFMzFpdWZlWS9tdlI5NjZscS9xekd4NXRZYTMrbVcvTWhxZ3RGTU12cjUxR1A2MWNLV01QVHlaSHI3WGQ2bWQySEExMXB3R2F2YmoraU5tUmdyaG1ueTN1L2Q2Mkl3bklDdEE3bm1VYkdmTGVEWjREUHYvK0REZS83WGVzeEtTM3BTNHl2akhadHJCYkFNbjh3MVhScnNmdjZuNzdrM2ZKYWxLV2J5bGcvZWUzRC9nbTloanBRNzZDTUs2Qm9hSTJ0MHdQQVU4M2pMYXR2cFdJQ2xTbHhiUDczYlh2aDJyQXZMWEc4UDc4VmpEM256N2xKazZKbTdNMW1EejJpdmZVUXYrdmZ3M3A0ZDRuSjgxNzN6dnRRZnpIM2ovekVQMzlhZzA5VkowRDNEQSthRTZRL1FIM3cvdlRzdFE3Y21iM3grQis5alB3SGNEVk5pOFpxOTRZTmU5UngwUStnREhPdnozRXBkUjRmM1B2aW1rTVptd21hUnZYZk1FeFVISFlZdHpDSXB5T2xZWXJCbnN3VitucVlIM3lSeDRVeW8yeTA0L3NDM2doam5McFBSOUxKbVB2bzUrVTJ1VEIzb3AvZmNiNWgvckY1NHI4YUxMdk56a0M2Z2x0MDVPOWRpNkpHWTVSczhsOXo1Z09QcU5ITlo2QXl5SUZYV3JxV0pjQlZkTyt4UFZzV3hwbndiVjU0dFNiNFpZNUFwZWlNdDVqM2UwZnRNNXNQd2lEbGRPSEhoT3hZMXVpNE8xcS9vR0s3M3phekg1eGw5NUVJLzlua1BsaXMrODUyd2JtUWVhSG5zdHNkZUFYWUY5K29tSExQZVdkZEFPTmEycC9pemViQWYrM2JUTzE3MnV1YjVMbDZrRnFublZzQWV1NnFwWEc5NVhTWnkxN1VuMVl0NWs4dXo1S1dSOXg1Z0RqalVCNzhxaHhuMmlGRU9zMHI1Z1U5N3Y2dHZGaDJaY0gzcnc4d1JtNVp5MWhOWnJVcjkwM3h3UDRCWTBpVzhEOEQySFhidmp6WEM4Tit5MmErMi8vcWxqUE1aNHlNWlVKZVRVMTNXTTVNa3c2eWx3UHZCV2tOL1AvY2hEc2NSeDNmYTJXMzRuSENHTCtxU3pZZTliWGFLcGR1RnZJWFpGYkF1L0k1dUFIWXdHK244WGZSb3ZJeTdaL2RGRmhQQStRWGR3L010T2NjQzVtNXhidmZYcmhPOXlSM29OZFMxWlNsVW9PZDE1TXE5ZjJBMHo2ZGNackdVWWpRQytSblFkQzNSYzF5c3AwcmgzMXN3UTNMNmJkTlA2M3FhRmZJdyt2WFgxamUya3lCNVZRYUlmVjk1aENCSzJGMVZKdnhhYndrdXFWZGVScy93cFhYNFFQUkttaXpocTVPMG02OUIrRVNFcjhadGhuTXZKRmMxVzNPcDF4K1hPTW1xM2VYdSt0UHZuM3B0RU5nR2dSZXRIVnMrWEQ0bnhZOExaeHprcWw1Yk5KZGFSWnVKQVplQy9MaFFZVitZY0pLa1hvUzRRd2s4dkNRcGZMV2VLV1NmcVVsd3VkMXV6elhXYUZ6NW1IYXVPeDdxOURvaTZuYVdRZmY2aWt0cHZQUDlOdGxFNEFvL1RGR1lWT25mSXh0N1pZVCtjdEVrS0JGOGo4YzVKVWU4QXB5Yzd2a0NoMkZIOXdWVG4vc3JGRkMyNUNoeitOYW5TWTFzc3g5NGovRGw5cXBlUnh4Mkh5LzNRMmNpWDh1dmwyeGZYd2xqT3hYMlJNaVhmS1B4ZXJQQ05oUVpXSFZ4TUlyUU1za2liaFJmVUozMmR1QnJSVmpTdktlRFBRRUZIaFhLS2lQdnFDTDFMbTdiUEh4Z3l4T0J3Sm1mNzlvZnFzOXlQdy8zclcrOEdPczFDVnZkY1g4Yms3NThPeTdzM2xqM3l1TVA4SHdkRmk4TWszcDErSFNHOU5MREJMMEduNWZwN3lqemZNeXNlMjJESFNPK2g4cExJY3NwMndmVnBCeUtJRTlUVkFhSmg1djlwRkRnS2txeWVwVjEzRU0yMXZsNWpwR1huU1BFTGZyMmFvWDVlMVhpOTBObDZ0TkROb3pPT1lRQVY0U3lNT1lzbk1JU3JHWGJxejMwUCtHUENwWGc2OGVSWW9VSGRSZmtlUmttbVVmejhsaDR1SWY5Tm8wVEVnWTVhWWNReEFBZTcyL2tqaWkyM3RoT01YbHIrNmlHekpqT0FiMmczUE56YmlWRHNNcVNBR0thUlh4YmV2Qk0rT1dRTXNJMlJ0bnhPUFlJRjlTc0pKdHdoQmVuQlN5RDUwVTQvdG4rb1NDOFh5SjFGSG1WOEdvOGc3aFI0bFdnTWFQY2lUeTdZRXZCUXpyOVdHMFcwTmkyQVB4YjVVL05rNS9TMmhiWVdyWXVhY2dBd1NzUnoxMW9uaHhsaHM5QnBjQ1hvTUtpSVNNRkNwTGwva0FGL1ROa09nQWdycm9weU1ZWUhoYUNzcENSTS9RUm9YK1Naa0hzWlJHQzZtZmR0NmplU1pWR0JkdVdOd0ZsdSsyekdzK3ExSWM0blVrVjIzMFFsNkwwdTlMZzJYZWtKUmxGMFV0eGJFWC91bU85cmM4djN4aE5WVVNsQnlvVnFIZEd4LzRvSWpaL0ZQa0NNcUZwMWdSRy91Ynh0LzhENnBtZTVYY1pBQUE9In0=",
+    "DCOS_PACKAGE_VERSION": "2.3.1-5.6.5",
+    "DCOS_PACKAGE_NAME": "kibana"
+  },
+  "maxLaunchDelaySeconds": 3600,
+  "mem": 2048,
+  "gpus": 0,
+  "networks": [
+    {
+      "mode": "host"
+    }
+  ],
+  "portDefinitions": [
+    {
+      "port": 10101,
+      "labels": {
+        "VIP_0": "/web.kibana:80"
+      },
+      "name": "kibana",
+      "protocol": "tcp"
+    }
+  ],
+  "requirePorts": false,
+  "upgradeStrategy": {
+    "maximumOverCapacity": 0,
+    "minimumHealthCapacity": 0
+  },
+  "user": "nobody",
+  "version": "2018-06-28T15:11:57.945Z",
+  "versionInfo": {
+    "lastScalingAt": "2018-06-28T15:11:57.945Z",
+    "lastConfigChangeAt": "2018-06-28T15:07:47.672Z"
+  },
+  "killSelection": "YOUNGEST_FIRST",
+  "unreachableStrategy": {
+    "inactiveAfterSeconds": 0,
+    "expungeAfterSeconds": 0
+  }
+}

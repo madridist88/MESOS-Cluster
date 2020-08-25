@@ -1,0 +1,14 @@
+---
+agent_list: {{ groups['node-private'] | map('extract', hostvars, ['ansible_ssh_host']) | list | ipaddr }}
+bootstrap_url: file:///opt/dcos_install_tmp
+cluster_name: {{ cluster_name }}
+exhibitor_storage_backend: static
+master_discovery: static
+ip_detect_public_filename: genconf/ip-detect
+public_agent_list: {{ groups['node-public'] | map('extract', hostvars, ['ansible_ssh_host']) | list | ipaddr }}
+master_list: {{ groups['master'] | map('extract', hostvars, ['ansible_ssh_host']) | list | ipaddr }}
+resolvers:
+- {{ cluster_nameserver }}
+ssh_port: 22
+ssh_user: {{ ansible_user }}
+use_proxy: 'false'

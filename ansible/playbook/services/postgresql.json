@@ -1,0 +1,100 @@
+{
+  "id": "/postgresql",
+  "backoffFactor": 1.15,
+  "backoffSeconds": 1,
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "forcePullImage": false,
+      "image": "postgres:9.6",
+      "parameters": [],
+      "privileged": false
+    },
+  "constraints": [
+    [
+      "postgres",
+      "IS",
+      "true"
+    ],
+    [
+      "common",
+      "MAX_PER",
+      "1"
+    ]
+  ],
+  "volumes": [
+      {
+        "containerPath": "/pgdata",
+        "hostPath": "/mnt/shared/postgresql",
+        "mode": "RW"
+      }
+  ],    
+  "portMappings": [
+      {
+        "containerPort": 5432,
+        "hostPort": 0,
+        "labels": {
+          "VIP_0": "/postgresql:5432"
+        },
+        "name": "postgresql",
+        "protocol": "tcp",
+        "servicePort": 10001
+      }
+    ]
+  },
+  "cpus": 1,
+  "disk": 0,
+  "env": {
+    "POSTGRES_USER": "admin",
+    "PGDATA": "pgdata",
+    "POSTGRES_DB": "defaultdb",
+    "POSTGRES_INITDB_ARGS": "",
+    "POSTGRES_PASSWORD": "password"
+  },
+  "executor": "",
+  "healthChecks": [
+    {
+      "gracePeriodSeconds": 300,
+      "intervalSeconds": 60,
+      "maxConsecutiveFailures": 3,
+      "portIndex": 0,
+      "protocol": "TCP",
+      "ipProtocol": "IPv4",
+      "timeoutSeconds": 20,
+      "delaySeconds": 15
+    }
+  ],
+  "instances": 1,
+  "labels": {
+    "DCOS_PACKAGE_SOURCE": "https://universe.mesosphere.com/repo",
+    "DCOS_SERVICE_NAME": "postgresql",
+    "DCOS_PACKAGE_VERSION": "9.6-0.2",
+    "DCOS_PACKAGE_NAME": "postgresql",
+    "MARATHON_SINGLE_INSTANCE_APP": "true",
+    "DCOS_PACKAGE_IS_FRAMEWORK": "false"
+  },
+  "maxLaunchDelaySeconds": 3600,
+  "mem": 512,
+  "gpus": 0,
+  "networks": [
+    {
+      "mode": "container/bridge"
+    }
+  ],
+  "residency": {
+    "relaunchEscalationTimeoutSeconds": 3600,
+    "taskLostBehavior": "WAIT_FOREVER"
+  },
+  "requirePorts": false,
+  "upgradeStrategy": {
+    "maximumOverCapacity": 0,
+    "minimumHealthCapacity": 0
+  },
+  "version": "2018-05-15T16:06:09.044Z",
+  "versionInfo": {
+    "lastScalingAt": "2018-05-15T16:06:09.044Z",
+    "lastConfigChangeAt": "2018-04-06T09:40:09.484Z"
+  },
+  "killSelection": "YOUNGEST_FIRST",
+  "unreachableStrategy": "disabled"
+}

@@ -1,0 +1,226 @@
+---
+- hosts: all
+  become: true
+  tasks:
+#    - name: Install needed network manager libs
+#      yum:
+#        name: '{{ item }}'
+#        state: installed
+#      with_items:
+#        - NetworkManager-glib
+#        - python-gobject
+
+#    - name: Change DNS
+#      nmcli:
+#        conn_name: "{{ ansible_default_ipv4.alias }}"
+#        type: ethernet
+#        dns4:
+#          - "{{ cluster_nameserver }}"
+#          - 8.8.8.8
+#        state: present
+
+#    - name: Reload network interface
+#      shell: ifdown "{{ ansible_default_ipv4.interface }}" && ifup "{{ ansible_default_ipv4.interface }}"
+
+    - name: Stop firewalld
+      service: name=firewalld state=stopped
+
+    - name: Disable firewalld
+      service: name=firewalld enabled=no
+
+    - name: set proper %wheel sudo rights
+      lineinfile: 
+        path: /etc/sudoers 
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+
+    - name: Setup hostname
+      hostname:
+        name: "{{ inventory_hostname }}"
+
+    - name: Test id_rsa.pub
+      delegate_to: localhost
+      stat:
+        path: ~/.ssh/id_rsa.pub
+      register: stat_result
+
+    - name: Create a SSH key for bootstrap user
+      user: 
+        name: "{{ ansible_user_id }}"
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: .ssh/id_rsa
+      when: 
+        - stat_result.stat.exists == False
+        - "'bootstrap' in group_names"
+
+    - name: Set authorized key took from file
+      authorized_key:
+        user: "{{ ansible_user }}"
+        state: present
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+    - name: Set timezone
+      shell: timedatectl set-timezone Europe/Moscow
+
+    - name: install ntpd
+      yum:
+        name: ntp
+        state: present
+
+    - name: run ntpd
+      service:
+        name: ntpd
+        state: started
+
+    - name: enable ntpd
+      service:
+        name: ntpd
+        enabled: yes
+
+    - name: Copy overlay module override
+      copy:
+        src: sources/etc/modules-load.d/overlay.conf
+        dest: /etc/modules-load.d/overlay.conf
+        owner: root
+        group: root
+        mode: 0644    
+
+    - name: Enable overlay
+      shell: modprobe overlay 
+
+
+    - name: install epel-release
+      yum:
+        name: epel-release
+        state: present
+
+    - name: install htop         
+      yum:
+        name: htop               
+        state: present
+
+    - name: install sysstat
+      yum:
+        name: sysstat                
+        state: present
+
+    - name: install mc
+      yum:
+        name: mc                
+        state: present
+
+    - name: install jq
+      yum:
+        name: jq                
+        state: present
+
+    - name: install python-jinja2
+      yum:
+        name: python-jinja2                
+        state: present
+
+    - name: remove chrony
+      yum:
+        name: chronyd
+        state: absent
+ 
+    - name: install unzip
+      yum:
+        name: unzip
+        state: present
+
+    - name: install python-netaddr
+      yum:
+        name: python-netaddr
+        state: present
+      when: "'bootstrap' in group_names"
+
+    - name: Copy docker repo
+      copy:
+        src: sources/etc/yum.repos.d/docker.repo
+        dest: /etc/yum.repos.d/docker.repo
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Create docker override directory
+      file: 
+        path: /etc/systemd/system/docker.service.d
+        recurse: yes
+        state: directory
+
+    - name: Copy docker override for overlayfs
+      copy:
+        src: sources/etc/systemd/system/docker.service.d/override.conf
+        dest: /etc/systemd/system/docker.service.d/override.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: install Docker
+      yum:
+        name: docker-engine
+        state: present
+
+    - name: install Docker SELinux
+      yum:
+        name: docker-engine-selinux
+        state: present
+
+    - name: Start docker
+      service: name=docker state=started
+
+    - name: Enable docker
+      service: name=docker enabled=yes
+    
+#- hosts: bootstrap
+#  become: true
+#  tasks:
+#    - name: Create directory for ssl-cert
+#      file:
+#        path: ~/ssl/
+#        recurse: yes
+#        state: directory
+
+#    - name: Generating TLS-cert for domain *.{{ cluster_domain }}
+#      shell: openssl req -newkey rsa:2048 -nodes -keyout ~/ssl/server.key -out ~/ssl/server.crt -x509 -days 3650 -subj "/C=RU/ST=MSK/L=Moscow/O=OOO /OU=SYS/CN=*.{{ cluster_domain }}/emailAddress="admin@.ru
+
+#- hosts: all
+#  become: true
+#  tasks:
+#    - name: Copy TLS-cert to node
+#      copy:
+#        src: ~/ssl/server.crt
+#        dest: /etc/pki/ca-trust/source/anchors/{{ cluster_domain }}.crt
+#        owner: root
+#        group: root
+#        mode: 0644
+
+#    - name: Update Trusted CA
+#      shell: update-ca-trust
+
+#    - name: Create TLS-cert directory
+#      file:
+#        path: /etc/docker/certs.d/registry.{{ cluster_domain }}
+#        recurse: yes
+#        state: directory
+
+#    - name: Copy TLS-cert to docker 
+#      copy:
+#        src: ~/ssl/server.crt
+#        dest: /etc/docker/certs.d/registry.{{ cluster_domain }}/ca.crt
+#        owner: root
+#        group: root
+#        mode: 0644
+
+#   - name: Copy Docker daemon config
+#     template:
+#       src: sources/template/daemon.json.j2
+#       dest: /etc/docker/daemon.json
+#     when: "'node-public' not in group_names"
+
+    - name: Restart docker
+      service: name=docker state=restarted
+
+

@@ -1,0 +1,67 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Make NFS folder
+      file:
+        path: /mnt/shared
+        recurse: yes
+        state: directory
+      when: nfs_master is defined
+
+    - name: Copy NFS config
+      template:
+        src: sources/etc/exports.j2
+        dest: /etc/exports
+      when: nfs_master is defined
+
+    - name: install nfs-utils
+      yum:
+        name: nfs-utils
+        state: present
+      when: "nfs_master is defined or 'node-private' in group_names"
+
+    - name: run rpcbind
+      service:
+        name: rpcbind
+        state: started
+      when: nfs_master is defined
+
+    - name: enable rpcbind
+      service:
+        name: rpcbind
+        enabled: yes
+      when: nfs_master is defined
+
+    - name: run nfs-server
+      service:
+        name: nfs-server
+        state: started
+      when: nfs_master is defined
+
+    - name: enable nfs-server
+      service:
+        name: nfs-server
+        enabled: yes
+      when: nfs_master is defined
+
+    - name: Copy NFS config
+      template:
+        src: sources/etc/systemd/system/mnt-shared.mount
+        dest: /etc/systemd/system/mnt-shared.mount
+      when: "'node-private' in group_names"
+
+    - name: Reloaded systemd
+      systemd:
+        state: started
+        daemon_reload: yes
+        name: mnt-shared.mount
+      when: "'node-private' in group_names"
+
+
+#    - name: install python-netaddr
+#      yum:
+#        name: python-netaddr
+#        state: present
+#      when: "'bootstrap' in group_names"
+

@@ -1,0 +1,24 @@
+---
+- import_playbook: prepare-hosts.yml
+- hosts: bootstrap
+  become: true
+  tasks:
+    - name: Generating config.yaml 
+      template:
+        src: sources/template/config.yaml.j2
+        dest: ~/genconf/config.yaml
+
+    - name: Run --install-prereqs
+      shell: cd ~ && bash dcos_generate_config.sh --install-prereqs
+
+    - name: Run --preflight
+      shell: cd ~ && bash dcos_generate_config.sh --preflight
+      ignore_errors: yes
+
+    - name: Run --deploy
+      shell: cd ~ && bash dcos_generate_config.sh --deploy
+      ignore_errors: yes
+
+    - name: Run --postflight
+      shell: cd ~ && bash dcos_generate_config.sh --postflight
+      ignore_errors: yes

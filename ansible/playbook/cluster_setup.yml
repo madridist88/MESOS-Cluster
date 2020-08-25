@@ -1,0 +1,48 @@
+---
+- import_playbook: prepare-hosts.yml
+- hosts: bootstrap
+  become: true
+  tasks:
+    - name: Create ~/genconf directory
+      file:
+        path: ~/genconf
+        recurse: yes
+        state: directory
+
+    - name: Copy ip-detect file
+      copy:
+        src: sources/genconf/ip-detect
+        dest: ~/genconf/ip-detect
+        mode: 0755
+
+    - name: Copy SSH-key
+      copy:
+        src: ~/.ssh/id_rsa
+        dest: ~/genconf/ssh_key
+        mode: 0600
+
+    - name: Get install script
+      shell: cd ~ && curl -O https://downloads.dcos.io/dcos/stable/dcos_generate_config.sh
+
+    - name: Generating config.yaml 
+      template:
+        src: sources/template/config.yaml.j2
+        dest: ~/genconf/config.yaml
+
+    - name: Run --genconf
+      shell: cd ~ && bash dcos_generate_config.sh --genconf
+
+    - name: Run --install-prereqs
+      shell: cd ~ && bash dcos_generate_config.sh --install-prereqs
+
+    - name: Run --preflight
+      shell: cd ~ && bash dcos_generate_config.sh --preflight
+      ignore_errors: yes
+
+    - name: Run --deploy
+      shell: cd ~ && bash dcos_generate_config.sh --deploy
+      ignore_errors: yes
+
+    - name: Run --postflight
+      shell: cd ~ && bash dcos_generate_config.sh --postflight
+      ignore_errors: yes

@@ -1,0 +1,88 @@
+---
+- hosts: node-private
+  become: true
+  tasks:
+    - name: Set MESOS ATTRIBUTES
+      shell: echo "MESOS_ATTRIBUTES={{ constraints }}:true" > /var/lib/dcos/mesos-slave-common && rm -f /var/lib/mesos/slave/meta/slaves/latest && systemctl stop dcos-mesos-slave && systemctl start dcos-mesos-slave && systemctl status dcos-mesos-slave
+      when: constraints is defined
+
+- hosts: bootstrap
+  become: true
+  tasks:
+    - name: Hashing password
+      shell: openssl passwd -1 "{{ docker_registry_password }}"
+      register: docker_registry_hash
+
+    - name: Cat crt
+      shell: cat ~/ssl/server.crt ~/ssl/server.key > ~/ssl/server
+
+    - name: Replace /n in crt
+      replace:
+        path: ~/ssl/server
+        regexp: '\s?\n'
+        replace: '\\n'
+        backup: yes
+
+    - name: Get crt
+      shell: cat ~/ssl/server
+      register: marathon_crt
+
+    - name: Generating marathon-lb.json
+      template:
+        src: sources/template/services/marathon-lb.json
+        dest: services/marathon-lb.json
+
+    - name: Generating docker-registry.json 
+      template:
+        src: sources/template/services/docker-registry.json
+        dest: services/docker-registry.json
+
+    - name: Generating elastic.json
+      template:
+        src: sources/template/services/elastic.json
+        dest: services/elastic.json
+
+    - name: Generating kibana.json
+      template:
+        src: sources/template/services/kibana.json
+        dest: services/kibana.json
+
+    - name: Generating logstash.json
+      template:
+        src: sources/template/services/logstash.json
+        dest: services/logstash.json
+
+    - name: Generating mongo.json
+      template:
+        src: sources/template/services/mongo.json
+        dest: services/mongo.json
+
+    - name: Generating postgresql.json
+      template:
+        src: sources/template/services/postgresql.json
+        dest: services/postgresql.json
+
+    - name: Generating redis.json
+      template:
+        src: sources/template/services/redis.json
+        dest: services/redis.json
+
+    - name: Generating minio.json
+      template:
+        src: sources/template/services/minio.json
+        dest: services/minio.json
+
+    - name: Deploy service 
+      shell: "{{ item }}"
+      loop:
+        - dcos marathon app add services/marathon-lb.json
+        - dcos marathon app add services/docker-registry.json
+        - dcos package install elastic --options=services/elastic.json --yes
+        - dcos package install kibana --options=services/kibana.json --yes
+        - dcos package install logstash --options=services/logstash.json --yes
+        - dcos marathon app add services/postgresql.json
+        - dcos marathon app add services/mongo.json
+        - dcos marathon app add services/redis.json
+        - dcos marathon app add services/minio.json
+
+

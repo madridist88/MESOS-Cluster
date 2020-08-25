@@ -1,0 +1,51 @@
+---
+- hosts: bootstrap
+  become: true
+  tasks:
+    - name: Create directory for ssl-cert
+      file:
+        path: ~/ssl/
+        recurse: yes
+        state: directory
+
+    - name: Generating TLS-cert for domain *.{{ cluster_domain }}
+      shell: openssl req -newkey rsa:2048 -nodes -keyout ~/ssl/server.key -out ~/ssl/server.crt -x509 -days 3650 -subj "/C=RU/ST=MSK/L=Moscow/O=OOO /OU=SYS/CN=*.{{ cluster_domain }}/emailAddress="admin@.ru
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Copy TLS-cert to node
+      copy:
+        src: ~/ssl/server.crt
+        dest: /etc/pki/ca-trust/source/anchors/{{ cluster_domain }}.crt
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Update Trusted CA
+      shell: update-ca-trust
+
+    - name: Create TLS-cert directory
+      file:
+        path: /etc/docker/certs.d/registry.{{ cluster_domain }}
+        recurse: yes
+        state: directory
+
+    - name: Copy TLS-cert to docker 
+      copy:
+        src: ~/ssl/server.crt
+        dest: /etc/docker/certs.d/registry.{{ cluster_domain }}/ca.crt
+        owner: root
+        group: root
+        mode: 0644
+
+#   - name: Copy Docker daemon config
+#     template:
+#       src: sources/template/daemon.json.j2
+#       dest: /etc/docker/daemon.json
+#     when: "'node-public' not in group_names"
+
+    - name: Restart docker
+      service: name=docker state=restarted
+
+

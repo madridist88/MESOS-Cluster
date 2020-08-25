@@ -1,0 +1,112 @@
+{
+  "id": "/minio",
+  "args": [
+    "server",
+    "-C",
+    "/config",
+    "/export"
+  ],
+  "backoffFactor": 1.15,
+  "backoffSeconds": 1,
+  "container": {
+    "portMappings": [
+      {
+        "containerPort": 9000,
+        "hostPort": 0,
+        "protocol": "tcp",
+        "servicePort": 9000
+      }
+    ],
+    "type": "DOCKER",
+    "volumes": [
+      {
+        "persistent": {
+          "type": "root",
+          "size": 1024,
+          "constraints": []
+        },
+        "mode": "RW",
+        "containerPath": "miniodata"
+      },
+      {
+        "persistent": {
+          "type": "root",
+          "size": 10,
+          "constraints": []
+        },
+        "mode": "RW",
+        "containerPath": "minioconfig"
+      },
+      {
+        "containerPath": "/export",
+        "hostPath": "miniodata",
+        "mode": "RW"
+      },
+      {
+        "containerPath": "/config",
+        "hostPath": "minioconfig",
+        "mode": "RW"
+      }
+    ],
+    "docker": {
+      "image": "minio/minio:RELEASE.2017-11-22T19-55-46Z",
+      "forcePullImage": true,
+      "privileged": true,
+      "parameters": []
+    }
+  },
+  "cpus": 1,
+  "disk": 0,
+  "env": {
+    "MINIO_ACCESS_KEY": "{{ minio_user }}",
+    "MINIO_SECRET_KEY": "{{ minio_password }}"
+  },
+  "healthChecks": [
+    {
+      "gracePeriodSeconds": 120,
+      "intervalSeconds": 30,
+      "maxConsecutiveFailures": 3,
+      "timeoutSeconds": 20,
+      "delaySeconds": 15,
+      "protocol": "COMMAND",
+      "command": {
+        "value": "/usr/bin/healthcheck.sh"
+      }
+    }
+  ],
+  "instances": 1,
+  "labels": {
+    "DCOS_PACKAGE_OPTIONS": "eyJzZXJ2aWNlIjp7Im5hbWUiOiJtaW5pbyIsInRscyI6ZmFsc2V9LCJyZXNvdXJjZSI6eyJjcHVzIjoxLCJtZW0iOjEwMjR9LCJzdG9yYWdlIjp7InZvbHVtZS1zaXplIjoxMDI0fSwiY3JlZGVudGlhbHMiOnsiYWNjZXNzLWtleSI6Im1pbmlvIiwic2VjcmV0LWtleSI6IlZvb2hvc29uQWpmaSJ9LCJuZXR3b3JraW5nIjp7InBvcnQiOjkwMDAsInB1YmxpYy1hY2Nlc3MiOnRydWV9fQ==",
+    "HAPROXY_0_REDIRECT_TO_HTTPS": "true",
+    "HAPROXY_0_MODE": "http",
+    "DCOS_PACKAGE_SOURCE": "https://universe.mesosphere.com/repo",
+    "HAPROXY_GROUP": "external",
+    "DCOS_PACKAGE_METADATA": "eyJwYWNrYWdpbmdWZXJzaW9uIjoiMy4wIiwibmFtZSI6Im1pbmlvIiwidmVyc2lvbiI6IjAuMC4xMS1SRUxFQVNFLjIwMTctMTEtMjJUMTktNTUtNDZaIiwibWFpbnRhaW5lciI6ImRldkBtaW5pby5pbyIsImRlc2NyaXB0aW9uIjoiTWluaW8gaXMgYW4gb2JqZWN0IHN0b3JhZ2Ugc2VydmVyIGZvciBjbG91ZCBuYXRpdmUgYXBwbGljYXRpb25zLiBUbyBkZXBsb3kgYXQgc2NhbGUsIHVzZSBEQy9PUyB0byBvcmNoZXN0cmF0ZSBNaW5pbyBjb250YWluZXJzIG9uZSBwZXIgdGVuYW50LiIsInRhZ3MiOlsiZGF0YSIsInN0b3JhZ2UiLCJmaWxlc3lzdGVtIl0sInNlbGVjdGVkIjpmYWxzZSwic2NtIjoiaHR0cHM6Ly9naXRodWIuY29tL21pbmlvL21pbmlvLmdpdCIsIndlYnNpdGUiOiJodHRwczovL3d3dy5taW5pby5pbyIsImZyYW1ld29yayI6ZmFsc2UsInByZUluc3RhbGxOb3RlcyI6IlRoaXMgaXMgYSBjb21tdW5pdHkgcGFja2FnZS4gQ29tbXVuaXR5IHBhY2thZ2VzIGFyZSB1bnZlcmlmaWVkIGFuZCB1bnJldmlld2VkIGNvbnRlbnQgZnJvbSB0aGUgY29tbXVuaXR5LiBMYXVuY2ggYXMgbWFueSBNaW5pbyBpbnN0YW5jZXMgYXMgcmVxdWlyZWQgcmVmZXJyaW5nIHRvIHRoZSBkb2N1bWVudGF0aW9uIGhlcmUgaHR0cHM6Ly9naXRodWIuY29tL2Rjb3MvZXhhbXBsZXMvYmxvYi9tYXN0ZXIvbWluaW8vMS45L1JFQURNRS5tZCIsInBvc3RJbnN0YWxsTm90ZXMiOiJNaW5pbyBpcyBjb21wYXRpYmxlIHdpdGggQVdTIFMzIEFQSXMuIExlYXJuIG1vcmUgYWJvdXQgTWluaW8gb24gZG9jcy5taW5pby5pbyAuIE1pbmlvIGhhcyBhbiBhY3RpdmUgY29tbXVuaXR5IG9uIFNsYWNrIHNsYWNrLm1pbmlvLmlvLiIsInBvc3RVbmluc3RhbGxOb3RlcyI6Ik1pbmlvIERDL09TIHNlcnZpY2UgaGFzIGJlZW4gc3VjY2Vzc2Z1bGx5IHVuaW5zdGFsbGVkIGFuZCB3aWxsIG5vIGxvbmdlciBydW4uIiwibGljZW5zZXMiOlt7Im5hbWUiOiJBcGFjaGUgTGljZW5zZSBWZXJzaW9uIDIuMCIsInVybCI6Imh0dHBzOi8vZ2l0aHViLmNvbS9taW5pby9taW5pby9ibG9iL21hc3Rlci9MSUNFTlNFIn1dLCJpbWFnZXMiOnsiaWNvbi1zbWFsbCI6Imh0dHBzOi8vbWluaW8uaW8vaW1nL2ljb25zL21pbmlvL21pbmlvX2Rhcmtfc21faWMucG5nIiwiaWNvbi1tZWRpdW0iOiJodHRwczovL21pbmlvLmlvL2ltZy9pY29ucy9taW5pby9taW5pb19kYXJrX21kX2ljLnBuZyIsImljb24tbGFyZ2UiOiJodHRwczovL21pbmlvLmlvL2ltZy9pY29ucy9taW5pby9taW5pb19kYXJrX2xnX2ljLnBuZyIsInNjcmVlbnNob3RzIjpbImh0dHBzOi8vbWluaW8uaW8vaW1nL2Jyb3dzZXIvMS5wbmciLCJodHRwczovL21pbmlvLmlvL2ltZy9icm93c2VyLzIucG5nIiwiaHR0cHM6Ly9taW5pby5pby9pbWcvYnJvd3Nlci8zLnBuZyIsImh0dHBzOi8vbWluaW8uaW8vaW1nL2Jyb3dzZXIvNC5wbmciLCJodHRwczovL21pbmlvLmlvL2ltZy9icm93c2VyLzUucG5nIiwiaHR0cHM6Ly9taW5pby5pby9pbWcvYnJvd3Nlci82LnBuZyJdfX0=",
+    "DCOS_PACKAGE_DEFINITION": "eyJtZXRhZGF0YSI6eyJDb250ZW50LVR5cGUiOiJhcHBsaWNhdGlvbi92bmQuZGNvcy51bml2ZXJzZS5wYWNrYWdlK2pzb247Y2hhcnNldD11dGYtODt2ZXJzaW9uPXYzIiwiQ29udGVudC1FbmNvZGluZyI6Imd6aXAifSwiZGF0YSI6Ikg0c0lBQUFBQUFBQUFLMVlhM2ZhUEJMK0t6cnNmaXhnbTlJdS9iU1FZQzRsdE56TTVUMDlQYkl0UUNEWlhrdUdPajM1N3p1U0RUR0VwdW0rKzRIRWw5RmNubmxtck5IUFVvUzlQZDdRWU9PUVdOQXdLSDBxMVNwRzZWMHB3SnpBRGFjQkRlSDJjSDV0Vkl5S2FaYkg3VUc3T1dsWExNUDhXSVo3eTVxYWpYSzlYbjcvWVFYeU1XRUVDM0xXYWhydlNoelRRTUtQeEtER0o0ZC9hK1VWcmQ4bndvdHBKRE1iRCtvRm9nTGhBSVh1am5nU0NSbkdlRU9RSURINGd0WmhqRHdXSmo0S3NLUUhnbkFVTWVwaHBVQlUwRFJFUG9sWW1DSU1TejNNeUR1VUNJTHU3NnBmSmtpR0tJeTlMUkV5eHBLZ3pKb1g1czRKRkFZRVJXQkVrZ0FIc2dMdVNid1JwVTkvbFh3c01kem16c0RWbWpJaVVpRUpMMzJENXhDMUo0bGYrclRHVEJCNDRIRUlaeXRsSkQ1VnF4c3F0NGxiOFVKZTFhRm5meXZ3R0RRZGlTdW9KQVh4NC9GWUtVQzBqaUVseHpEZW43VkhNZWtGUW1MR2hxRWs0R0JwdWdYUUZHNFFEdWRKUUdXS3NoU1RDcnE3ZmdSeU1VRkpBSURTTlNVK3dPM0RiVXdPbEJ6aFZrRkNBb25XY2NpUjNKSm5wUlUwd0VuZ2JSRVdpT01nelRHa3lwdkFVNG9GaXNsL0VocURtcGlzU1J3RHh4VHdTbzBmZWdrSHhUcGJhRXZBaVJzUStWNG9xdVFINWhGQVhIVlo2Rlk1QnFUakhEeXowcWlPMjgzN2gzYUYrNEJQRkFwNUJjZVpSNkF2QW1zdUkrZ0lGbEJ6UGtHVEdtcCs3UUZaQmdUSEFlSWh1SUhkTUpGNU1PQWFPQ3JPS1VDVi9NVVdhMkppVHhQdkdXaFlNR0dBTEJMcTczbGRKZmR0RnRCYjNtV1VWTFNtSHRHNlhVSUNKQklQY0JUcmhMRVVjcEl2elhOMHBJeWhJRVFzRERiQTB6Z0psQkhnUHdtRVV2M1h6MVA5TmlIVmdQZ2dlNFh5ZWtTV3J2RWtacjlsNXdYd2c5NWRlemhwbDU2QTYvRDJIakkwdmlyMGtsbjVWMG5WT3BUV1ZqMzRXVHBZelNoNlNDQUFjR1ZLSUo5WTh4ekl2T25kTlNtZWorZ1gydjlJYWtQbUJhdG9hYzBTbDl0eXRUQWJQWHI4RERLYkhoOGUvY1VEL1JMSWp4NTNIdDJha3lxNVphMWxlald6TVdobXV0eTVJM3U3Q0hUMW1XYzFUSThQMllDYnpGMDh5K0I1L2RIdjJNblNjaDU3dS9ESDgxcjcvYlJqbXk0Zmh1T09JNVlMTmwzTmh3ZVhqNVhjNDNEWFBEN2NuZnl4MDFVTi9HRWl1MWUvUVB2UFBOb1RkelIvZHRlVG8vVGkvckMwR3NtS3MrQWNtL3JSQmlQZDFzRUxSbFRMMmthK3ByOXpyYnF4bkxOa3RlaEIvRVY3NDdyWG1TbnMybE5qT0JnN1BackhvdVB4ZVVQNGM1TjVhZTlEenk2c3UydDlmUGJuOUN2YTZZK1dpM0VJTVVPY1p1UnlkbGgxYkdNNUtjWnhYaWRkYTh5MExPc3ZMbUk2KzlrQ1hJYVJWeHN6TjFDNXZtbmZJSXRXcGlmb0g5emFxQmpMT1NiUFloOVdrOTVHNlFDK0dHNnR2MTBCRDA2eERoYkRpSENuc1I1ZHIyMDFpamJYaytQZnd1Tm1EazgvYmdKZUtpOU5PZ00yM0l5ajQ2UVFDL0RRU2Z3N3lFOVgzTUR0bEYrUTU0MER5TjNDL3hFdklvM2J3N1Q1UXNjRkRsM2pZbjFlZnhkK3FiaWdOaUJHSjUxQnpySHlEVGk3V215UGdMVnhPOTd0QVhMN3YzTm04Ly94OGZXYzNQYnhUL0o0d1o4enJpMi9XSE9yVG1PSExTZFZQZWd5N240RS9TVUE3b0t2L2F2K1pEOTZsbU40YWIxWTY4bEoxeUQzZFRBZmc3OFNQREVuNDlrUGUrUU03ZlhDdU9ZWEJWd00zMnFrV05YOXZqK1p6TWJkOFlzODlIVStwM1A3NkhYQTNuVXYrelgrTjNMUVNCV0h2MHdML2ZFWCtHc083Y0xqalpySTY5dEpmYzUyS3lmcmhhcmZuK094d00rMHJ2Mkd1Ri9uK21WZU10M2RmZ1M2eFdydXN4WDQ2M2Y3NW1weTVTOWZIVlJPWmwxSHVHMG1seUFMdVRTOHdHRm4vTHFaN1hNUDRWdTJuUDh3Y0hzWXd2Y2lmbU8vUFVKTkc2NEYzeGZOMy83OTFEQ0hvMW05Zlp1TElEYzN0eTdQK2lmSVcyRFR6UGpVTy9pTFlUcXdnR08wQVQ3WXd1OXNkN2pqN0hCYWY0VDZ1T3AzSjUxK3VweERyTkNMOEx5eG4xbU80dDllKzMvZlRtL21ralBJdThxUkxTN2xIMjdsbFBvZEpsZnpodW5iUTZacnJmdWc2dWtYdXMwdGFVT2M4QjFkMWh3REwxWnN6SUZqWFNkZExmUzZ4NWMxZU00elhjM3JscXJ0RjV6ZG0vM3BubjFkR1BiOXlIQ21NOWdLakoyOXJtdFNrenZZVCt4aHJZRUJONmpCN2RLQzczanRRVUx0MVcvVTE3TStjMmlQekw3dDJLL3Fld1JPZ1AranN6NGR3N25QOWNWeTNtZXV3dVgwYmUvS2p6MnJ6dnl1RDF5VVVHTmU0blVkNm5iWWJqQzNkMnJmb3ZZOE9SWjAwclpIczMxak9YY2FYZmp2ekJTZnVQTmU1UW4yVWVMTUo5QTcrQU85MDVrOUdUbmozdFNvcjJjRyt6STJmdGdMK0Q4eng2M3BmZ2pYWURmanJxNlBySSszenZzc2Y5RUtQRzd2Vjg3UWdQOEcxRjM5c2kvMkplekZJbmZoeUVuSDJicmRjVGl5N0NOd012SzdHczhpcC9UK0RNOU4wNTAxTFBnbTN5OFhMY2dWTTRpcWdmdjgyd2UxQ2J6NFhIcFNNNmdJazlnamFnK0toU0JTcUtza3B2QS9nSDMxdTlKNTVsTXZZTE8vejY3MHhyZWMzWjhHM2RNc25PMktQNzA2L2o0OWdYWEsxWVNsMUZFd1V4WWN0dStGM2ZacE9xaFN2cWtxQ1ZIY2RYLzNjYnovTHZoMzZsV2lZQU1iYXEyRUU1OG0vQSsxY1A5S0M4UHhodnloRXJaNVZnS1RPa3dvWWh0S1BSUGZWT1BHNFJGbUdoalNzald2Q2xsdkVhcTlSZWo5VzRUcWJ4SDZvSVcrUVNJOVJqTytQR25Dck9sR0pmV2ZBb1laam5NWVFjdE9xQ3pyaDVVdzNsU3p5MytvNFM4T0l4SkxtckVobi9UVXBVd2psWWZzaE9QRkljZ2tId21mbCt0VGovTndxZ2ZIRitxenVlL25sYTRoUEVYaEdxWnZHSVpQcytacFdsZm5HNWtuUXFveFhYdXl4Z21UNXdNZ0NGMHk4Vkp2TzhCcXBoYkVTMkkxQ2djQlJLS09ZSkNibm1mNml5bGEzMVczNGJFc3czSzJyb3oxcUtzZVpKV1huZkdVMWFSZUJyTVZOTjJxaVpqSXpQODFKY3pYWndseFVuRGVEVU1ZUllPaTkvcWM1RW0zZ3V3c1F2RlZJNVRGOCsycVM3eWVrSEV1K1ljWjhhTGtCbkozWDJkSWJERllWNUZBYndnOWRSWUYxNzlPVDVCd0Z6cFVJVUJUeitHVXE2WmdWT29RRGlmOHBiRUh3c000L1Z1R0RPdDl3WmE2dmNaVng1azVvSEE5blpIOW51ZjV5ZDZmb1hvSVdjSkpXZERIb29tQzR4Y21RRXJSUDFzRUFZUDIxblY0MS9FVUxlZytBTTlKSUNuT0N1SDFvTzZlaFRYc2lkeXFXdzI5UG9IS3dzdVkvaUs0dkNEMkpDMVlLaFJuMFZKVHk2TFBJSHV6YnFIR1lpTGZwbXVpWlcvck1xMWE2UnFpZ3A4WGhoUmNBWkhxc0ZLWmVkbU96dTkrbS9Wcm1DK0Jpc0pZdmxUL0ZaNHFIY2N0OVlwSWE3SUxoQStZTXRXM1hpTjh3ekFNaUNKS1hFYTl2RVA5cXY4SmxJbWhURXdsdkpoZVJOZS9iMVZLNEJwZUhkMDN2WnRRcDR3NDhQTVAwWDhCSjNHUEtMZ1hBQUE9In0=",
+    "DCOS_PACKAGE_VERSION": "0.0.11-RELEASE.2017-11-22T19-55-46Z",
+    "DCOS_PACKAGE_NAME": "minio",
+    "MARATHON_SINGLE_INSTANCE_APP": "true",
+    "HAPROXY_0_VHOST": "{{ cluster_name }}-minio.{{ cluster_domain }}"
+  },
+  "maxLaunchDelaySeconds": 36000,
+  "mem": 1024,
+  "gpus": 0,
+  "networks": [
+    {
+      "mode": "container/bridge"
+    }
+  ],
+  "residency": {
+    "relaunchEscalationTimeoutSeconds": 3600,
+    "taskLostBehavior": "WAIT_FOREVER"
+  },
+  "requirePorts": false,
+  "upgradeStrategy": {
+    "maximumOverCapacity": 0,
+    "minimumHealthCapacity": 0
+  },
+  "killSelection": "YOUNGEST_FIRST",
+  "unreachableStrategy": "disabled",
+  "fetch": [],
+  "constraints": []
+}

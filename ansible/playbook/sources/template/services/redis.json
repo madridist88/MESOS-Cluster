@@ -1,0 +1,73 @@
+{
+  "id": "/redis",
+  "backoffFactor": 1.15,
+  "backoffSeconds": 1,
+  "container": {
+    "type": "DOCKER",
+    "docker": {
+      "forcePullImage": false,
+      "image": "redis:3.2.9",
+      "parameters": [],
+      "privileged": false
+    },
+    "volumes": [],
+    "portMappings": [
+      {
+        "containerPort": 6379,
+        "hostPort": 0,
+        "labels": {
+          "VIP_0": "/redis:6379"
+        },
+        "protocol": "tcp",
+        "servicePort": 10002
+      }
+    ]
+  },
+  "cpus": 1,
+  "disk": 2000,
+  "executor": "",
+  "healthChecks": [
+    {
+      "gracePeriodSeconds": 60,
+      "intervalSeconds": 5,
+      "maxConsecutiveFailures": 3,
+      "portIndex": 0,
+      "protocol": "TCP",
+      "ipProtocol": "IPv4",
+      "timeoutSeconds": 5,
+      "delaySeconds": 15
+    }
+  ],
+  "instances": 1,
+  "labels": {
+    "DCOS_PACKAGE_OPTIONS": "eyJzZXJ2aWNlIjp7Im5hbWUiOiJyZWRpcyJ9LCJyZWRpcyI6eyJjcHVzIjoxLCJtZW0iOjEwMjR9fQ==",
+    "DCOS_PACKAGE_SOURCE": "https://universe.mesosphere.com/repo",
+    "DCOS_PACKAGE_METADATA": "eyJwYWNrYWdpbmdWZXJzaW9uIjoiMy4wIiwibmFtZSI6InJlZGlzIiwidmVyc2lvbiI6IjMuMi45LTAuMC4xIiwibWFpbnRhaW5lciI6ImpvZXJnQG1lc29zcGhlcmUuaW8iLCJkZXNjcmlwdGlvbiI6IlRoaXMgaXMgYSBzaW5nbGUgcmVkaXMgY29udGFpbmVyLCB3aGljaCBpcyBzdWl0ZWQgZm9yIEhBIHNldHVwcy4gUmVkaXMgaXMgYSBwb3B1bGFyIGluLW1lbW9yeSBkYXRhIHN0cnVjdHVyZSBzdG9yZSwgdXNlZCBhcyBkYXRhYmFzZSwgY2FjaGUgYW5kIG1lc3NhZ2UgYnJva2VyLi4gU2VlIGRvY3VtZW50YXRpb24gZm9yIG1vcmUgZGV0YWlsczogaHR0cHM6Ly9naXRodWIuY29tL2Rjb3MvZXhhbXBsZXMvdHJlZS9tYXN0ZXIvcmVkaXMgIiwidGFncyI6WyJtZXNvc3BoZXJlIiwic2VydmljZSIsInJlZGlzIiwic3RvcmFnZSJdLCJzZWxlY3RlZCI6ZmFsc2UsIndlYnNpdGUiOiJodHRwOi8vcmVkaXMuaW8iLCJmcmFtZXdvcmsiOmZhbHNlLCJwcmVJbnN0YWxsTm90ZXMiOiJUaGlzIERDL09TIFNlcnZpY2UgaXMgY3VycmVudGx5IGluIHByZXZpZXcuIFRoZXJlIG1heSBiZSBidWdzLCBpbmNvbXBsZXRlIGZlYXR1cmVzLCBpbmNvcnJlY3QgZG9jdW1lbnRhdGlvbiwgb3Igb3RoZXIgZGlzY3JlcGFuY2llcy4gUmVkaXMgcmVxdWlyZXMgYSBzaW5nbGUgbm9kZSB3aXRoIDMwME1CIG9mIFJBTSBhbmQgMC4xIENQVXMuICIsInBvc3RJbnN0YWxsTm90ZXMiOiJSZWRpcyBpbnN0YWxsZWQhIiwicG9zdFVuaW5zdGFsbE5vdGVzIjoiVGhhbmsgeW91IGZvciB1c2luZyBSZWRpcyIsImxpY2Vuc2VzIjpbeyJuYW1lIjoiQlNEIiwidXJsIjoiaHR0cDovL3JlZGlzLmlvL3RvcGljcy9saWNlbnNlIn1dLCJpbWFnZXMiOnsiaWNvbi1zbWFsbCI6Imh0dHBzOi8vZG93bmxvYWRzLm1lc29zcGhlcmUuY29tL2Fzc2V0cy91bml2ZXJzZS8wMDAvcmVkaXMtaWNvbi1zbWFsbC5wbmciLCJpY29uLW1lZGl1bSI6Imh0dHBzOi8vZG93bmxvYWRzLm1lc29zcGhlcmUuY29tL2Fzc2V0cy91bml2ZXJzZS8wMDAvcmVkaXMtaWNvbi1tZWRpdW0ucG5nIiwiaWNvbi1sYXJnZSI6Imh0dHBzOi8vZG93bmxvYWRzLm1lc29zcGhlcmUuY29tL2Fzc2V0cy91bml2ZXJzZS8wMDAvcmVkaXMtaWNvbi1sYXJnZS5wbmciLCJzY3JlZW5zaG90cyI6WyJodHRwczovL3JlZGlzLmlvL2ltYWdlcy9yZWRpcy13aGl0ZS5wbmciXX19",
+    "DCOS_PACKAGE_DEFINITION": "eyJtZXRhZGF0YSI6eyJDb250ZW50LVR5cGUiOiJhcHBsaWNhdGlvbi92bmQuZGNvcy51bml2ZXJzZS5wYWNrYWdlK2pzb247Y2hhcnNldD11dGYtODt2ZXJzaW9uPXYzIiwiQ29udGVudC1FbmNvZGluZyI6Imd6aXAifSwiZGF0YSI6Ikg0c0lBQUFBQUFBQUFLMVdiVzhpTnhEK0srNStUbUNCUzF1UVRpb3ZCNEVMWEFNSkVFNzN3ZXMxWUxEWFc3K3dSNkw4OTQ3dEpVZVNTbFhWazFqaHQzbjh6RE96TS9zVTVaanM4WVpsbXpsVm1za3Nha1dOU2h4ZFJCa1dGQ2FLcGt6RDlIQzJYYTgwTCtOS1hLbkJ1cUtjWWsxZnJHc1hrY0FzTS9CUUJhZDNrcXJOSDRKcXFmTXRWYlRDSkZpbFZCUEZjaE1RNzdaTUkvaGhwSUVJcDhoZmlvZ3NZUzVRc1dWazY0NW95d3hOMFZvcWROMUdtaHFiNndxYSt2TWVJWmU1NVZnaGxsMEtLcVE2b2hRYkFEYktFbU1WaFpGVTlBSlpEVEJZKzkwRUhMaEFCSk10UlRoTEViRFZlRU5Sb3VTZXFrb0Z6U2hGcVNSV1VHRGtTSHNDZ0E3TEZEaHkzVUpiWTNMZHFsWTN6R3h0VWlGU1ZGTWlkWlYreHlMblZGZU5vclFxc0RaVVZZT0RJSVRCR3gyMXZrWS9CSUpGVGRXQkVlclZEZW83MHNBbyt1WTJPU1dnUWRUS0xPY3dKK0kwTEdpaVFSNVExSkVCTHQ0OEtMNVdFTTlDcW4zVVdtTU8va2E1b3NOTUc4ejVSQnFxVDNIb2RhdGZadUN4cCtBMEpWWXA4SnNmUVZNRVJnZEdpd3E2YzF5UndFZVVnRkIyb3k5Z0c1d0dWdzFGYTRxZDJPVWkyQlB6V3NBTEJBSktBeUFJS0JKRmM1d1JSbDlpcWVoZmxnSEFqNXpJWkVwUkFlS2lSaHlQTzBpdTBiUTk5dkdDVEVUZFArL0JHQnpOcFRadi9DclRJeXpTOUpmeTFIM0czdnFQc3owNlN1dkRhOTNGZ1E0WWNGQWowKzdZMTZmVHU5R1o5V0RIS3Y1ZThhcVJPU082V3BwRnp4QTV3YkllWk1UMHpSc1RZaWV3d21icjVrL1JvZDdPODdFRmJwQ1JkeFEweFQ2cUVML05VUEQ5Y0FmL21mbU4xT2ZIVlBEZGFuWmxIeFkxdmw3RzdLYnR6MWpTbUc0VE1lSGtPUHgxMlB1a3U2ek5IaHFkbXA5Zmc2Mlk3L0Z5YlAxYW85WU1kaldlekY3dko0dTVBVnh2dnhyd1Irenhoc1c0MXc2WTlhWk5CLzA4RWZPajQrVTVkdHNzdmViRnltRjFSNS91NHNuTmRENE0zTG9PcDduRDlWZm40Um5seWFLZmxUYS8wY2FJazNxelJzQ0hHOUYvQkY5amNyemFKZldyK0dIQjdXbzV0Q2VjbTJ6RUhiY1gvd01lbkprMmtzWkllYjMybzluc2ZubzluUTBkNzNBbTZ4eElOcDA4TERzRlhseGxYcHUrL2h6czRiaytHM2RIWjNlUGJnRTNkcmlUM2JqeFpWYWNueXVJYU1aSmZYSkl1dDZYK0tIUlB1TUZqL2krZlJCekhXSnhma2Y1OE5Yb3Z2OTc0WG16NW5HMW1PYmtVZGJIaitScXVKR3Z6cTV2NWZ0eFAvNThtcTg5dDVGY0xmbzZIV3g3ZUREZjRjYVlmV0dkeE90d3VqL3JISlBHOUFEeDFQNWVQdTNkZDA5YWpUSWkrcnZWdk1PSjRJZFZmOEpkM0ZmWERxZGRIM2RML3lIdjBvSEx5YjYrcjgrZFh2dVFmL2Nubk1McE5sdGM3VmZMamJNdFRqbVJEcmhaTFpxMTlEVjI3YlFQdWZIaEZ0WWhEM2JwY3BxbllqNkFXT2gwT1NwemZQemk4L0kyYjNZM0h6OUd6NjZDYW1rVkZGTjRyN0NHaHFIZHlDcDRxY3MzNzZYTnVBMG9VdnN3Q3FXM2JJQXQzL1NpNTJkQVpBSXFzVWRoWUhxcEJWU1FzZ0M0K3AvS0l1TVNwN3B5MXZSY053aTNWMjNHWEMrbDFUaU9RN200L0lGVHliTU5sQlMvSUdEUGlwK0FISURPb2FGQmJ1aFBRUFk0SmJBcjRsRHF0dEw0aG5hQ2ZpbUlRYmJTR3ZxNUNZYmZRRkhDV1FqR3M0L0dtbTJjdXVhWU80NHkyVUgzY0NWYnlad3F3NEwycHg3NUR3ZGZmMXlFZmxZZVJ3SGVxdERGenlEZjRvY1MvL1FHYkFLcnJ2TVkxeWxQbUw2TFpJUldYRDhQWE9CemczbFZVcnJHbHB1WER5bWZRV1ZxL1J2enM3YVYvUmZxSkxmNlBYVm9rRWh2c2V1cFJpTElOVW1ncTdneGRHSDArcTR6VHpJckVuZ2h6anlwVldMZnk1aHcyUWt6OEFnK3RkN2ZPQTdmWC8venRyais0Znc2bUFZSi9mZEI2bExOK3hzNGZQUDZRdVlLK0M0b2MrcHZkajhtVE9RS0FBQT0ifQ==",
+    "DCOS_PACKAGE_VERSION": "3.2.9-0.0.1",
+    "DCOS_PACKAGE_NAME": "redis"
+  },
+  "maxLaunchDelaySeconds": 3600,
+  "mem": 1024,
+  "gpus": 0,
+  "networks": [
+    {
+      "mode": "container/bridge"
+    }
+  ],
+  "requirePorts": false,
+  "upgradeStrategy": {
+    "maximumOverCapacity": 1,
+    "minimumHealthCapacity": 1
+  },
+  "version": "2018-04-06T09:40:46.072Z",
+  "versionInfo": {
+    "lastScalingAt": "2018-04-06T09:40:46.072Z",
+    "lastConfigChangeAt": "2018-04-06T09:40:46.072Z"
+  },
+  "killSelection": "YOUNGEST_FIRST",
+  "unreachableStrategy": {
+    "inactiveAfterSeconds": 0,
+    "expungeAfterSeconds": 0
+  }
+}

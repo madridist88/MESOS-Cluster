@@ -1,0 +1,78 @@
+{
+  "id": "/postgresql",
+  "backoffFactor": 1.15,
+  "backoffSeconds": 1,
+  "constraints": [["postgres", "IS", "true"]],
+  "container": {
+    "portMappings": [
+      {
+        "containerPort": 5432,
+        "hostPort": 0,
+        "labels": {
+          "VIP_0": "/postgresql:5432"
+        },
+        "protocol": "tcp",
+        "servicePort": 10011,
+        "name": "postgresql"
+      }
+    ],
+    "type": "DOCKER",
+    "volumes": [
+      {
+        "containerPath": "/pgdata",
+        "hostPath": "/mnt/shared/postgresql",
+        "mode": "RW"
+      }
+    ],
+    "docker": {
+      "image": "postgres:9.6",
+      "forcePullImage": false,
+      "privileged": false,
+      "parameters": []
+    }
+  },
+  "labels": {
+    "HAPROXY_0_BACKEND_HEAD": "backend {backend} balance {balance} mode {mode} timeout server 60m timeout client 60m"
+  },
+  "cpus": 1,
+  "disk": 0,
+  "env": {
+    "POSTGRES_USER": "admin",
+    "PGDATA": "pgdata",
+    "POSTGRES_DB": "defaultdb",
+    "POSTGRES_PASSWORD": "password"
+  },
+  "healthChecks": [
+    {
+      "gracePeriodSeconds": 300,
+      "intervalSeconds": 60,
+      "maxConsecutiveFailures": 3,
+      "portIndex": 0,
+      "timeoutSeconds": 20,
+      "delaySeconds": 15,
+      "protocol": "TCP",
+      "ipProtocol": "IPv4"
+    }
+  ],
+  "instances": 1,
+  "maxLaunchDelaySeconds": 3600,
+  "mem": 512,
+  "gpus": 0,
+  "networks": [
+    {
+      "mode": "container/bridge"
+    }
+  ],
+  "requirePorts": false,
+  "upgradeStrategy": {
+    "maximumOverCapacity": 0,
+    "minimumHealthCapacity": 0
+  },
+  "killSelection": "YOUNGEST_FIRST",
+  "unreachableStrategy": {
+    "inactiveAfterSeconds": 0,
+    "expungeAfterSeconds": 0
+  },
+  "fetch": []
+}
+

@@ -1,0 +1,201 @@
+from commands import getoutput as cmd
+from time import time
+import re
+import sys
+import random
+import string
+
+
+def password_gen(length=10):
+    return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits)
+                   for _ in range(length))
+
+
+certs = cmd("cat ~/ssl/server.crt ~/ssl/server.key")
+certs = re.sub(r'\s?\n', '\\\\n', certs)
+
+docker_registry_user = "admin"
+docker_registry_password = "{{ service_password }}"
+docker_registry_password_hash = cmd("openssl passwd -1 " + docker_registry_password)
+docker_registry_v_host = "{{ cluster_name }}-registry.{{ cluster_domain }}"
+docker_registry_http_realm = "{{ cluster_name }} Docker Registry"
+
+minio_bucket = "5f3164a4d7fb7e49f9fd932f9e1b3b55"
+minio_v_host = "software"
+minio_password = password_gen()
+minio_port = 9000
+
+nexus_v_host = "software"
+nexus_password = password_gen()
+
+gitlab_uri = "ssh://git@git.com:2222"
+
+branch = 'master'
+if len(sys.argv) > 2:
+    branch = sys.argv[2]
+
+kafka_spo_events_topic = "spo_events_" + branch
+kafka_spo_events_partitions = 8
+kafka_spo_events_replication_factor = 2
+kafka_spo_events_expiration_time = 31104000000  # 1 year
+
+kafka_enriched_events_topic = "enriched_events_" + branch
+kafka_enriched_events_partitions = 8
+kafka_enriched_events_replication_factor = 2
+kafka_enriched_events_expiration_time = 31104000000
+
+kafka_raw_events_topic = "raw_events_" + branch
+kafka_raw_events_partitions = 8
+kafka_raw_events_replication_factor = 2
+kafka_raw_events_expiration_time = 31104000000  # 1 year
+
+kafka_user_cluster_topic = "user_cluster_" + branch
+kafka_user_cluster_partitions = 8
+kafka_user_cluster_replication_factor = 2
+kafka_user_cluster_expiration_time = 31104000000  # 1 year
+
+lb_vip_postfix = ".l4lb.thisdcos.directory"
+marathon_vip_postfix = ".marathon" + lb_vip_postfix
+
+postgres_user = "admin"
+postgres_password = "eequerAnedOw"  # used in adm/spo api application definition of marathon so should be a constant
+postgres_default_db = "spodb"
+postgres_db_prefix = "spodb_"
+postgres_service_name = "postgresql"
+postgres_host = postgres_service_name + marathon_vip_postfix
+postgres_port = 5432
+
+kafka_broker_endpoint = "broker.kafka%s:9092" % lb_vip_postfix
+kafka_zookeeper_endpoint = "master.mesos:2181/dcos-service-kafka"
+
+cassandra_keyspace = "fact_handler_" + branch
+cassandra_host = "node.cassandra" + lb_vip_postfix
+cassandra_port = 9042
+
+hdfs_host = 'hdfs-development%s' % marathon_vip_postfix
+hdfs_port = 9000
+
+params = {
+    'serial': time(),
+    'configuration': sys.argv[1],
+    'branch': branch,
+    'gitlab': {
+        'uri': gitlab_uri,
+        'integration_uri': 'https://git.com/',
+        'runner_tag': 'v.1.0',
+        'tags_sbt': 'shell,build-as-docker,sbt',
+        'tags_shell': 'shell,build-as-docker',
+        'token': '',
+        'projects': {
+            'frontend': {
+                'id': 230,
+                'token': '6d497b66953d41013a18f720659276'
+            },
+            'fact_receiver': {
+                'id': 234,
+                'token': '1dcd8e635c37f424a99ecb211e5fe9'
+            },
+            'common': {
+                'id': 242,
+                'token': 'c8251275de20c4e121f27e3bc2d530'
+            },
+            'content_api': {
+                'id': 232,
+                'token': '4f443c24f5a52b62166094538f6e49'
+            },
+            'adm_spo_api': {
+                'id': 233,
+                'token': '688fb776c2eec653b00f41d28c51c0'
+            },
+        }
+    },
+    'docker_registry': {
+        'user': docker_registry_user,
+        'password': docker_registry_password,
+        'password_hash': docker_registry_password_hash,
+        'v_host': docker_registry_v_host,
+        'http_realm': docker_registry_http_realm,
+        'credentials': 'http://%s:%d/%s/docker.tar.gz' % (minio_v_host,
+                                                          minio_port,
+                                                          minio_bucket)
+    },
+    'marathon_lb': {
+        'haproxy_ssl_cert': certs,
+        'vip_postfix': marathon_vip_postfix
+    },
+    'minio': {
+        'bucket': minio_bucket,
+        'v_host': minio_v_host,
+        'password': minio_password,
+        'port': minio_port
+    },
+    'nexus': {
+        'password': nexus_password,
+        'v_host': nexus_v_host,
+        'realm': 'Sonatype Nexus Repository Manager',
+        'user': 'admin',
+        'credentials': 'http://%s:%d/%s/nexus-credentials' % (minio_v_host,
+                                                              minio_port,
+                                                              minio_bucket)
+    },
+    'elasticsearch': {
+        'healthcheck_password': password_gen()
+    },
+    'kibana': {
+        'password': "{{ service_password }}"
+    },
+    'marathon_url': 'http://marathon.mesos:8080',
+    'metronome_url': 'http://metronome.mesos:9000',
+    'kafka': {
+        'broker': {
+            'endpoint': kafka_broker_endpoint
+        },
+        'zookeeper': {
+            'endpoint': kafka_zookeeper_endpoint
+        },
+        'spo_events': {
+            'topic': kafka_spo_events_topic,
+            'partitions': kafka_spo_events_partitions,
+            'replication_factor': kafka_spo_events_replication_factor,
+            'topic_expiration_time': kafka_spo_events_expiration_time
+        },
+        'raw_events': {
+            'topic': kafka_raw_events_topic,
+            'partitions': kafka_raw_events_partitions,
+            'replication_factor': kafka_raw_events_replication_factor,
+            'topic_expiration_time': kafka_raw_events_expiration_time
+        },
+        'enriched_events': {
+            'topic': kafka_enriched_events_topic,
+            'partitions': kafka_enriched_events_partitions,
+            'replication_factor': kafka_enriched_events_replication_factor,
+            'topic_expiration_time': kafka_enriched_events_expiration_time
+        },
+        'user_cluster': {
+            'topic': kafka_user_cluster_topic,
+            'partitions': kafka_user_cluster_partitions,
+            'replication_factor': kafka_user_cluster_replication_factor,
+            'topic_expiration_time': kafka_user_cluster_expiration_time
+        }
+    },
+    'cassandra': {
+        'host': cassandra_host,
+        'port': cassandra_port,
+        'endpoint': '%s:%d' % (cassandra_host, cassandra_port),
+        'keyspace': cassandra_keyspace
+    },
+    'postgres': {
+        'user': postgres_user,
+        'password': postgres_password,
+        'default_database': postgres_default_db,
+        'database_prefix': postgres_db_prefix,
+        'service_name': postgres_service_name,
+        'port': postgres_port,
+        'host': postgres_host
+    },
+    'hdfs': {
+        'host': hdfs_host,
+        'port': hdfs_port,
+        'endpoint': '%s:%d' % (hdfs_host, hdfs_port)
+    }
+}
